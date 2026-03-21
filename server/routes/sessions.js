@@ -13,7 +13,8 @@ function computePoints(attempts) {
 }
 
 function requireActiveSubscription(req, res, next) {
-  if (req.user.subscription_status === 'inactive') {
+  const user = db.prepare('SELECT subscription_status FROM users WHERE id = ?').get(req.user.id);
+  if (!user || user.subscription_status === 'inactive') {
     return res.status(403).json({ error: 'Active subscription required' });
   }
   next();
