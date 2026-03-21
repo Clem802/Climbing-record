@@ -3,7 +3,13 @@
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "build": "npm install --prefix client && npm run build --prefix client",
+    "migrate": "node server/db/migrate.js",
     "seed": "node server/db/seed.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "ws": "^8.0.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
