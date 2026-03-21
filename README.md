@@ -7,6 +7,7 @@ A full-stack web app for tracking indoor climbing boulder problems. Log sessions
 ### Prerequisites
 - Node.js 18+
 - npm 9+
+- Neon Postgres database (get a free account at [neon.tech](https://neon.tech))
 
 ### Setup
 
@@ -17,6 +18,13 @@ npm install
 # Install server and client dependencies
 npm install --prefix server
 npm install --prefix client
+
+# Set up environment variables
+cp server/.env.example server/.env
+# Edit server/.env and add your DATABASE_URL from Neon
+
+# Run migrations
+npm run migrate
 
 # Seed the database with demo data
 npm run seed
@@ -55,6 +63,8 @@ Max score per session: **350 points** (35 flashes)
 | Command | Description |
 |---|---|
 | `npm run dev` | Start both client and server in development mode |
+| `npm run build` | Build client and server for production |
+| `npm run migrate` | Run database migrations |
 | `npm run seed` | Seed the database with demo users and sessions |
 | `npm test --prefix server` | Run server tests |
 | `npm test --prefix client` | Run client component tests |
