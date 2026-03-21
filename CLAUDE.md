@@ -30,6 +30,11 @@
 - `getByText('0')` will fail if multiple stats show 0 — use `parentElement.textContent` instead
 - `getByText('1')` in BoulderCard matches both the number label AND the button — use `getByRole('button', { name: '1' })`
 
+## Documentation
+- `README.md` — developer setup and scripts
+- `docs/USER_GUIDE.md` — end-user guide (features, scoring, FAQ)
+- Keep both in sync when changing features, scoring rules, routes, or subscription behaviour
+
 ## Seed / Demo Data
 - `npm run seed` — creates admin@climbing.app/admin123 and demo@climbing.app/demo123
 - Re-running seed on existing DB will fail (UNIQUE constraint) — delete `server/data/climbing.db` first
