@@ -1,9 +1,6 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 
-// Initialize DB (runs schema creation)
-require('./db/database');
-
 const authRoutes = require('./routes/auth');
 const sessionRoutes = require('./routes/sessions');
 const adminRoutes = require('./routes/admin');
