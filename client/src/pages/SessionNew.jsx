@@ -45,29 +45,30 @@ export default function SessionNew() {
       ? (summary.boulders.reduce((s, b) => s + b.attempts, 0) / summary.completed_count).toFixed(1)
       : '—';
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="bg-gray-800 rounded-xl p-8 max-w-sm w-full text-center">
-          <h2 className="text-2xl font-bold mb-6">Session Complete!</h2>
+      <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
+        <div className="bg-white rounded-2xl shadow-natural p-8 max-w-sm w-full text-center">
+          <h2 className="text-3xl font-bold text-brand mb-1">Session Complete!</h2>
+          <p className="text-gray-500 text-sm mb-6">Here's how you climbed</p>
           <div className="grid grid-cols-2 gap-4 mb-8">
-            <div className="bg-gray-700 rounded p-4">
+            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
               <div className="text-3xl font-bold text-brand">{summary.total_points}</div>
-              <div className="text-sm text-gray-400 mt-1">Total Points</div>
+              <div className="text-sm text-gray-500 mt-1">Total Points</div>
             </div>
-            <div className="bg-gray-700 rounded p-4">
-              <div className="text-3xl font-bold">{summary.completed_count} / 35</div>
-              <div className="text-sm text-gray-400 mt-1">Completed</div>
+            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+              <div className="text-3xl font-bold text-gray-900">{summary.completed_count} / 35</div>
+              <div className="text-sm text-gray-500 mt-1">Completed</div>
             </div>
-            <div className="bg-gray-700 rounded p-4">
-              <div className="text-3xl font-bold text-green-400">{summary.flash_count}</div>
-              <div className="text-sm text-gray-400 mt-1">Flashes</div>
+            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+              <div className="text-3xl font-bold text-green-600">{summary.flash_count}</div>
+              <div className="text-sm text-gray-500 mt-1">Flashes</div>
             </div>
-            <div className="bg-gray-700 rounded p-4">
-              <div className="text-3xl font-bold">{avgAttempts}</div>
-              <div className="text-sm text-gray-400 mt-1">Avg Attempts</div>
+            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+              <div className="text-3xl font-bold text-gray-900">{avgAttempts}</div>
+              <div className="text-sm text-gray-500 mt-1">Avg Attempts</div>
             </div>
           </div>
           <button onClick={() => navigate('/dashboard')}
-            className="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded transition">
+            className="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-full transition">
             Done
           </button>
         </div>
@@ -76,34 +77,34 @@ export default function SessionNew() {
   }
 
   return (
-    <div className="min-h-screen max-w-2xl mx-auto px-4 py-6 pb-28">
+    <div className="min-h-screen bg-gray-50 max-w-2xl mx-auto px-4 py-6 pb-28">
       <div className="flex items-center gap-3 mb-6">
-        <button type="button" onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white">←</button>
+        <button type="button" onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-brand transition text-xl">←</button>
         <h1 className="text-2xl font-bold">New Session</h1>
       </div>
 
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
             <input type="date" value={form.date}
               onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
-              required className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-brand" />
+              required className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand" />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Location</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
             <input type="text" value={form.location}
               onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
               placeholder="e.g. The Reach" required
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-brand" />
+              className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand" />
           </div>
         </div>
         <div className="mb-6">
-          <label className="block text-sm text-gray-400 mb-1">Notes (optional)</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Notes (optional)</label>
           <textarea value={form.notes}
             onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
             rows={2}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-brand resize-none" />
+            className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand resize-none" />
         </div>
 
         <div className="grid grid-cols-5 gap-1.5 mb-6">
@@ -113,7 +114,7 @@ export default function SessionNew() {
         </div>
 
         <button type="submit" disabled={saving}
-          className="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-lg transition disabled:opacity-50">
+          className="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-full transition disabled:opacity-50">
           {saving ? 'Saving...' : 'Save Session'}
         </button>
       </form>

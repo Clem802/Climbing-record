@@ -24,8 +24,8 @@ function ToastContainer({ toasts }) {
     <div className="fixed top-4 right-4 z-50 space-y-2">
       {toasts.map(t => (
         <div key={t.id}
-          className={`px-4 py-3 rounded shadow-lg text-sm font-medium transition-all
-            ${t.type === 'error' ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}>
+          className={`px-4 py-3 rounded-xl shadow-natural text-sm font-medium transition-all border
+            ${t.type === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200'}`}>
           {t.message}
         </div>
       ))}

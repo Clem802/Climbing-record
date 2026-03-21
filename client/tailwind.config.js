@@ -3,7 +3,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        brand: { DEFAULT: '#f97316', dark: '#ea580c' },
+        brand: { DEFAULT: '#cd2927', dark: '#961816' },
+      },
+      boxShadow: {
+        natural: '6px 6px 9px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06)',
       },
     },
   },

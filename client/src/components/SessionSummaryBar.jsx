@@ -15,7 +15,7 @@ export default function SessionSummaryBar({ boulders }) {
     : '—';
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-700 px-4 py-3 z-40">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg px-4 py-3 z-40">
       <div className="max-w-2xl mx-auto flex justify-around">
         <Stat label="Points" value={total_points} accent />
         <Stat label="Completed" value={`${completed_count} / 35`} />
@@ -29,8 +29,8 @@ export default function SessionSummaryBar({ boulders }) {
 function Stat({ label, value, accent }) {
   return (
     <div className="text-center">
-      <div className={`text-xl font-bold ${accent ? 'text-brand' : 'text-white'}`}>{value}</div>
-      <div className="text-xs text-gray-400">{label}</div>
+      <div className={`text-xl font-bold ${accent ? 'text-brand' : 'text-gray-900'}`}>{value}</div>
+      <div className="text-xs text-gray-500">{label}</div>
     </div>
   );
 }

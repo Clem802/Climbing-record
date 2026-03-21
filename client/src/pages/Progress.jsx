@@ -61,23 +61,23 @@ export default function Progress() {
     margin: { top: 5, right: 10, left: -10, bottom: 5 },
   };
 
-  const axisProps = { stroke: '#6b7280', tick: { fill: '#9ca3af', fontSize: 11 } };
-  const gridProps = { strokeDasharray: '3 3', stroke: '#374151' };
-  const tooltipProps = { contentStyle: { backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '6px' } };
+  const axisProps = { stroke: '#d1d5db', tick: { fill: '#6b7280', fontSize: 11 } };
+  const gridProps = { strokeDasharray: '3 3', stroke: '#f3f4f6' };
+  const tooltipProps = { contentStyle: { backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '12px', boxShadow: '6px 6px 9px rgba(0,0,0,0.1)', color: '#111827' } };
 
   if (loading) return <div className="flex items-center justify-center min-h-screen text-gray-400">Loading...</div>;
 
   return (
-    <div className="min-h-screen max-w-4xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gray-50 max-w-4xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/dashboard')} aria-label="Back to dashboard" className="text-gray-400 hover:text-white">←</button>
+          <button onClick={() => navigate('/dashboard')} aria-label="Back to dashboard" className="text-gray-400 hover:text-brand transition text-xl">←</button>
           <h1 className="text-2xl font-bold">Progress</h1>
         </div>
         <div className="flex gap-1">
           {RANGES.map(r => (
             <button key={r.label} onClick={() => setRange(r.days)}
-              className={`text-sm px-3 py-1.5 rounded transition ${range === r.days ? 'bg-orange-500 text-white' : 'bg-gray-700 hover:bg-gray-600 text-gray-300'}`}>
+              className={`text-sm px-4 py-1.5 rounded-full transition font-medium ${range === r.days ? 'bg-brand text-white' : 'bg-white border border-gray-300 text-gray-600 hover:border-brand hover:text-brand'}`}>
               {r.label}
             </button>
           ))}
@@ -87,7 +87,7 @@ export default function Progress() {
       {chartData.length === 0 ? (
         <p className="text-gray-400 text-center py-12">No sessions in this range.</p>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-6">
           <ChartCard title="Score Over Time">
             <ResponsiveContainer width="100%" height={220}>
               <LineChart {...chartProps}>
@@ -95,7 +95,7 @@ export default function Progress() {
                 <XAxis dataKey="date" {...axisProps} />
                 <YAxis {...axisProps} domain={[0, 350]} />
                 <Tooltip {...tooltipProps} />
-                <Line type="monotone" dataKey="score" stroke="#f97316" strokeWidth={2} dot={{ r: 3 }} name="Points" />
+                <Line type="monotone" dataKey="score" stroke="#cd2927" strokeWidth={2} dot={{ r: 3 }} name="Points" />
               </LineChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -107,7 +107,7 @@ export default function Progress() {
                 <XAxis dataKey="date" {...axisProps} />
                 <YAxis {...axisProps} domain={[0, 100]} unit="%" />
                 <Tooltip {...tooltipProps} formatter={v => `${v}%`} />
-                <Line type="monotone" dataKey="completion" stroke="#60a5fa" strokeWidth={2} dot={{ r: 3 }} name="Completion" />
+                <Line type="monotone" dataKey="completion" stroke="#0364c1" strokeWidth={2} dot={{ r: 3 }} name="Completion" />
               </LineChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -119,7 +119,7 @@ export default function Progress() {
                 <XAxis dataKey="date" {...axisProps} />
                 <YAxis {...axisProps} />
                 <Tooltip {...tooltipProps} />
-                <Bar dataKey="flashes" fill="#4ade80" name="Flashes" />
+                <Bar dataKey="flashes" fill="#108948" name="Flashes" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -131,7 +131,7 @@ export default function Progress() {
                 <XAxis dataKey="date" {...axisProps} />
                 <YAxis {...axisProps} domain={[1, 4]} />
                 <Tooltip {...tooltipProps} />
-                <Line type="monotone" dataKey="avgAttempts" stroke="#a78bfa" strokeWidth={2} dot={{ r: 3 }} name="Avg Attempts" />
+                <Line type="monotone" dataKey="avgAttempts" stroke="#e0a109" strokeWidth={2} dot={{ r: 3 }} name="Avg Attempts" />
               </LineChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -143,11 +143,11 @@ export default function Progress() {
                 <XAxis dataKey="date" {...axisProps} />
                 <YAxis {...axisProps} />
                 <Tooltip {...tooltipProps} />
-                <Legend wrapperStyle={{ fontSize: '12px', color: '#9ca3af' }} />
-                <Bar dataKey="pts10" stackId="a" fill="#4ade80" name="10pts (flash)" />
-                <Bar dataKey="pts7" stackId="a" fill="#facc15" name="7pts" />
+                <Legend wrapperStyle={{ fontSize: '12px', color: '#6b7280' }} />
+                <Bar dataKey="pts10" stackId="a" fill="#108948" name="10pts (flash)" />
+                <Bar dataKey="pts7" stackId="a" fill="#e0a109" name="7pts" />
                 <Bar dataKey="pts4" stackId="a" fill="#f97316" name="4pts" />
-                <Bar dataKey="pts1" stackId="a" fill="#ef4444" name="1pt" />
+                <Bar dataKey="pts1" stackId="a" fill="#cd2927" name="1pt" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
@@ -159,8 +159,8 @@ export default function Progress() {
 
 function ChartCard({ title, children }) {
   return (
-    <div className="bg-gray-800 rounded-xl p-4">
-      <h3 className="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wide">{title}</h3>
+    <div className="bg-white rounded-2xl shadow-natural p-5">
+      <h3 className="text-xs font-bold text-gray-400 mb-4 uppercase tracking-widest">{title}</h3>
       {children}
     </div>
   );

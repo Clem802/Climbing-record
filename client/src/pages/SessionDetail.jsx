@@ -58,36 +58,36 @@ export default function SessionDetail() {
   if (loading) return <div className="flex items-center justify-center min-h-screen text-gray-400">Loading...</div>;
 
   return (
-    <div className="min-h-screen max-w-2xl mx-auto px-4 py-6 pb-28">
+    <div className="min-h-screen bg-gray-50 max-w-2xl mx-auto px-4 py-6 pb-28">
       <div className="flex items-center gap-3 mb-6">
-        <button type="button" onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white">←</button>
+        <button type="button" onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-brand transition text-xl">←</button>
         <h1 className="text-2xl font-bold">Session Detail</h1>
-        {!canEdit && <span className="ml-auto text-xs bg-amber-900/50 text-amber-300 px-2 py-1 rounded">Read Only</span>}
+        {!canEdit && <span className="ml-auto text-xs bg-amber-100 text-amber-700 border border-amber-200 px-2 py-1 rounded-full font-medium">Read Only</span>}
       </div>
 
       <form onSubmit={handleSave}>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Date</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
             <input type="date" value={form.date}
               onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
               disabled={!canEdit} required
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-brand disabled:opacity-60" />
+              className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand disabled:opacity-60 disabled:bg-gray-50" />
           </div>
           <div>
-            <label className="block text-sm text-gray-400 mb-1">Location</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
             <input type="text" value={form.location}
               onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
               disabled={!canEdit} required
-              className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-brand disabled:opacity-60" />
+              className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand disabled:opacity-60 disabled:bg-gray-50" />
           </div>
         </div>
         <div className="mb-6">
-          <label className="block text-sm text-gray-400 mb-1">Notes</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
           <textarea value={form.notes}
             onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
             disabled={!canEdit} rows={2}
-            className="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 focus:outline-none focus:border-brand resize-none disabled:opacity-60" />
+            className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand resize-none disabled:opacity-60 disabled:bg-gray-50" />
         </div>
 
         <div className="grid grid-cols-5 gap-1.5 mb-6">
@@ -100,7 +100,7 @@ export default function SessionDetail() {
 
         {canEdit && (
           <button type="submit" disabled={saving}
-            className="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-lg transition disabled:opacity-50">
+            className="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-full transition disabled:opacity-50">
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
         )}
