@@ -110,7 +110,7 @@ router.put('/:id', requireActiveSubscription, (req, res) => {
   res.json({ ...buildSessionSummary(updated, boulderRows), boulders: boulderList });
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', requireActiveSubscription, (req, res) => {
   const session = db.prepare('SELECT * FROM sessions WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
   if (!session) return res.status(403).json({ error: 'Not found or forbidden' });
   db.prepare('DELETE FROM sessions WHERE id = ?').run(session.id);
