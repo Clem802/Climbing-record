@@ -1,20 +1,16 @@
 const express = require('express');
 const db = require('../db/database');
 const { requireAuth } = require('../middleware/auth');
+const { computePoints } = require('../utils/points');
 
 const router = express.Router();
 router.use(requireAuth);
 
-function computePoints(attempts) {
-  if (attempts === 1) return 10;
-  if (attempts === 2) return 7;
-  if (attempts === 3) return 4;
-  return 1;
-}
+const WRITE_ALLOWED_STATUSES = new Set(['active', 'trial']);
 
 function requireActiveSubscription(req, res, next) {
   const user = db.prepare('SELECT subscription_status FROM users WHERE id = ?').get(req.user.id);
-  if (!user || user.subscription_status === 'inactive') {
+  if (!user || !WRITE_ALLOWED_STATUSES.has(user.subscription_status)) {
     return res.status(403).json({ error: 'Active subscription required' });
   }
   next();

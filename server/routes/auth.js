@@ -14,7 +14,8 @@ const COOKIE_OPTIONS = {
 };
 
 router.post('/register', async (req, res) => {
-  const { email, name, password } = req.body;
+  const { name, password } = req.body;
+  const email = req.body.email?.toLowerCase().trim();
   if (!email || !name || !password) return res.status(400).json({ error: 'All fields required' });
   if (!/\S+@\S+\.\S+/.test(email)) return res.status(400).json({ error: 'Invalid email' });
   if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
@@ -25,7 +26,7 @@ router.post('/register', async (req, res) => {
   const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
   const result = db.prepare(
     'INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)'
-  ).run(email.toLowerCase().trim(), name.trim(), password_hash);
+  ).run(email, name.trim(), password_hash);
 
   const user = db.prepare('SELECT id, email, name, role, subscription_status FROM users WHERE id = ?').get(result.lastInsertRowid);
   const token = jwt.sign({ id: user.id, email: user.email, role: user.role, subscription_status: user.subscription_status }, JWT_SECRET, { expiresIn: '7d' });
@@ -49,7 +50,7 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-  res.clearCookie('token', { httpOnly: true, sameSite: 'strict' });
+  res.clearCookie('token', COOKIE_OPTIONS);
   res.json({ message: 'Logged out' });
 });
 

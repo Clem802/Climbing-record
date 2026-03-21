@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../db/database');
 const { requireAuth } = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
+const { computePoints } = require('../utils/points');
 
 const router = express.Router();
 router.use(requireAuth, requireAdmin);
@@ -38,16 +39,16 @@ router.get('/users/:id/sessions', (req, res) => {
   const sessions = db.prepare('SELECT * FROM sessions WHERE user_id = ? ORDER BY date DESC').all(req.params.id);
   const result = sessions.map(s => {
     const boulders = db.prepare('SELECT * FROM boulders WHERE session_id = ?').all(s.id);
-    const total_points = boulders.reduce((sum, b) => {
-      const pts = b.attempts === 1 ? 10 : b.attempts === 2 ? 7 : b.attempts === 3 ? 4 : 1;
-      return sum + pts;
-    }, 0);
+    const total_points = boulders.reduce((sum, b) => sum + computePoints(b.attempts), 0);
     return { ...s, total_points, completed_count: boulders.length, flash_count: boulders.filter(b => b.attempts === 1).length };
   });
   res.json(result);
 });
 
 router.delete('/users/:id', (req, res) => {
+  if (String(req.params.id) === String(req.user.id)) {
+    return res.status(400).json({ error: 'Cannot delete your own account' });
+  }
   const user = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
   db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
