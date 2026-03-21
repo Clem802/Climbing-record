@@ -7,10 +7,10 @@ import Register from './pages/Register.jsx';
 import Upgrade from './pages/Upgrade.jsx';
 
 import Dashboard from './pages/Dashboard.jsx';
+import SessionNew from './pages/SessionNew.jsx';
+import SessionDetail from './pages/SessionDetail.jsx';
 
 // Placeholder pages — will be replaced in later tasks
-const SessionNew = () => <div className="p-8 text-gray-400">New Session (coming soon)</div>;
-const SessionDetail = () => <div className="p-8 text-gray-400">Session Detail (coming soon)</div>;
 const Progress = () => <div className="p-8 text-gray-400">Progress (coming soon)</div>;
 const Admin = () => <div className="p-8 text-gray-400">Admin (coming soon)</div>;
 
