@@ -7,6 +7,8 @@ import {
 import { apiGetSessionsFull } from '../api/sessions.js';
 import { useToast } from '../hooks/useToast.jsx';
 
+const BOULDERS_PER_SESSION = 35;
+
 const RANGES = [
   { label: 'Last 30 days', days: 30 },
   { label: 'Last 90 days', days: 90 },
@@ -47,7 +49,7 @@ export default function Progress() {
     return {
       date: s.date.slice(5),
       score: s.total_points,
-      completion: Math.round((s.completed_count / 35) * 100),
+      completion: Math.round((s.completed_count / BOULDERS_PER_SESSION) * 100),
       flashes: s.flash_count,
       avgAttempts: Number(avgAttempts),
       pts10, pts7, pts4, pts1,
@@ -69,7 +71,7 @@ export default function Progress() {
     <div className="min-h-screen max-w-4xl mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white">←</button>
+          <button onClick={() => navigate('/dashboard')} aria-label="Back to dashboard" className="text-gray-400 hover:text-white">←</button>
           <h1 className="text-2xl font-bold">Progress</h1>
         </div>
         <div className="flex gap-1">

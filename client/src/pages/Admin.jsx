@@ -50,6 +50,7 @@ export default function Admin() {
 
   async function viewSessions(user) {
     setSelectedUser(user);
+    setUserSessions([]);
     try {
       const s = await apiAdminGetUserSessions(user.id);
       setUserSessions(s);
@@ -61,7 +62,7 @@ export default function Admin() {
   return (
     <div className="min-h-screen max-w-5xl mx-auto px-4 py-6">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate('/dashboard')} className="text-gray-400 hover:text-white">←</button>
+        <button onClick={() => navigate('/dashboard')} aria-label="Back to dashboard" className="text-gray-400 hover:text-white">←</button>
         <h1 className="text-2xl font-bold">Admin Panel</h1>
       </div>
 
@@ -109,6 +110,7 @@ export default function Admin() {
                     </td>
                     <td className="px-4 py-3">
                       <button onClick={() => toggleSub(u)}
+                        aria-label={`Change subscription status for ${u.name} (currently ${u.subscription_status})`}
                         className={`text-xs px-2 py-1 rounded font-medium transition hover:opacity-80 ${STATUS_COLORS[u.subscription_status]}`}>
                         {u.subscription_status}
                       </button>
@@ -116,8 +118,8 @@ export default function Admin() {
                     <td className="px-4 py-3 text-right text-gray-300">{u.total_sessions}</td>
                     <td className="px-4 py-3 text-gray-300">{u.last_session_date ? new Date(u.last_session_date).toLocaleDateString() : '—'}</td>
                     <td className="px-4 py-3 text-right">
-                      <button onClick={() => viewSessions(u)} className="text-xs text-blue-400 hover:underline mr-3">Sessions</button>
-                      <button onClick={() => deleteUser(u)} className="text-xs text-red-400 hover:underline">Delete</button>
+                      <button onClick={() => viewSessions(u)} aria-label={`View sessions for ${u.name}`} className="text-xs text-blue-400 hover:underline mr-3">Sessions</button>
+                      <button onClick={() => deleteUser(u)} aria-label={`Delete ${u.name}`} className="text-xs text-red-400 hover:underline">Delete</button>
                     </td>
                   </tr>
                 ))}
@@ -130,7 +132,7 @@ export default function Admin() {
           <div>
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-lg font-semibold">{selectedUser.name}'s Sessions</h2>
-              <button onClick={() => setSelectedUser(null)} className="text-gray-400 hover:text-white text-sm">✕</button>
+              <button onClick={() => setSelectedUser(null)} aria-label="Close sessions panel" className="text-gray-400 hover:text-white text-sm">✕</button>
             </div>
             <div className="bg-gray-800 rounded-xl overflow-hidden">
               {userSessions.length === 0 ? (
