@@ -88,8 +88,10 @@ export default function Admin() {
               <thead>
                 <tr className="text-left text-gray-400 border-b border-gray-700">
                   <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3">Role</th>
                   <th className="px-4 py-3">Status</th>
                   <th className="px-4 py-3 text-right">Sessions</th>
+                  <th className="px-4 py-3">Last Session</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -101,12 +103,18 @@ export default function Admin() {
                       <div className="text-xs text-gray-400">{u.email}</div>
                     </td>
                     <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-1 rounded font-medium ${u.role === 'admin' ? 'bg-amber-900/50 text-amber-300' : 'bg-gray-700 text-gray-300'}`}>
+                        {u.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
                       <button onClick={() => toggleSub(u)}
                         className={`text-xs px-2 py-1 rounded font-medium transition hover:opacity-80 ${STATUS_COLORS[u.subscription_status]}`}>
                         {u.subscription_status}
                       </button>
                     </td>
                     <td className="px-4 py-3 text-right text-gray-300">{u.total_sessions}</td>
+                    <td className="px-4 py-3 text-gray-300">{u.last_session_date ? new Date(u.last_session_date).toLocaleDateString() : '—'}</td>
                     <td className="px-4 py-3 text-right">
                       <button onClick={() => viewSessions(u)} className="text-xs text-blue-400 hover:underline mr-3">Sessions</button>
                       <button onClick={() => deleteUser(u)} className="text-xs text-red-400 hover:underline">Delete</button>

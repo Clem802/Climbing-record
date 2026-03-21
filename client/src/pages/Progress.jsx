@@ -8,8 +8,8 @@ import { apiGetSessionsFull } from '../api/sessions.js';
 import { useToast } from '../hooks/useToast.jsx';
 
 const RANGES = [
-  { label: '30 days', days: 30 },
-  { label: '90 days', days: 90 },
+  { label: 'Last 30 days', days: 30 },
+  { label: 'Last 90 days', days: 90 },
   { label: 'All time', days: null },
 ];
 
