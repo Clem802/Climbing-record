@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('../db/database');
+const { sql } = require('../db/database');
 const { requireAuth } = require('../middleware/auth');
 const requireAdmin = require('../middleware/requireAdmin');
 const { computePoints } = require('../utils/points');
@@ -9,57 +9,78 @@ router.use(requireAuth, requireAdmin);
 
 const VALID_STATUSES = ['active', 'inactive', 'trial'];
 
-router.get('/users', (req, res) => {
-  const users = db.prepare(`
-    SELECT u.id, u.email, u.name, u.role, u.subscription_status, u.created_at,
-           COUNT(s.id) as total_sessions,
-           MAX(s.date) as last_session_date
-    FROM users u
-    LEFT JOIN sessions s ON s.user_id = u.id
-    GROUP BY u.id
-    ORDER BY u.created_at DESC
-  `).all();
-  res.json(users);
+router.get('/users', async (req, res, next) => {
+  try {
+    const users = await sql`
+      SELECT u.id, u.email, u.name, u.role, u.subscription_status, u.created_at,
+             COUNT(s.id)::int as total_sessions,
+             MAX(s.date) as last_session_date
+      FROM users u
+      LEFT JOIN sessions s ON s.user_id = u.id
+      GROUP BY u.id
+      ORDER BY u.created_at DESC
+    `;
+    res.json(users);
+  } catch (err) { next(err); }
 });
 
-router.patch('/users/:id/subscription', (req, res) => {
-  const { status } = req.body;
-  if (!VALID_STATUSES.includes(status)) {
-    return res.status(400).json({ error: `status must be one of: ${VALID_STATUSES.join(', ')}` });
-  }
-  const user = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
-  if (!user) return res.status(404).json({ error: 'User not found' });
+router.patch('/users/:id/subscription', async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    if (!VALID_STATUSES.includes(status)) {
+      return res.status(400).json({ error: `status must be one of: ${VALID_STATUSES.join(', ')}` });
+    }
+    const [user] = await sql`SELECT id FROM users WHERE id = ${req.params.id}`;
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-  db.prepare('UPDATE users SET subscription_status = ? WHERE id = ?').run(status, req.params.id);
-  const updated = db.prepare('SELECT id, email, name, role, subscription_status FROM users WHERE id = ?').get(req.params.id);
-  res.json(updated);
+    const [updated] = await sql`
+      UPDATE users SET subscription_status = ${status} WHERE id = ${req.params.id}
+      RETURNING id, email, name, role, subscription_status
+    `;
+    res.json(updated);
+  } catch (err) { next(err); }
 });
 
-router.get('/users/:id/sessions', (req, res) => {
-  const sessions = db.prepare('SELECT * FROM sessions WHERE user_id = ? ORDER BY date DESC').all(req.params.id);
-  const result = sessions.map(s => {
-    const boulders = db.prepare('SELECT * FROM boulders WHERE session_id = ?').all(s.id);
-    const total_points = boulders.reduce((sum, b) => sum + computePoints(b.attempts), 0);
-    return { ...s, total_points, completed_count: boulders.length, flash_count: boulders.filter(b => b.attempts === 1).length };
-  });
-  res.json(result);
+router.get('/users/:id/sessions', async (req, res, next) => {
+  try {
+    const sessions = await sql`
+      SELECT * FROM sessions WHERE user_id = ${req.params.id} ORDER BY date DESC
+    `;
+    const result = await Promise.all(sessions.map(async s => {
+      const boulders = await sql`SELECT * FROM boulders WHERE session_id = ${s.id}`;
+      const total_points = boulders.reduce((sum, b) => sum + computePoints(b.attempts), 0);
+      return {
+        ...s,
+        total_points,
+        completed_count: boulders.length,
+        flash_count: boulders.filter(b => b.attempts === 1).length,
+      };
+    }));
+    res.json(result);
+  } catch (err) { next(err); }
 });
 
-router.delete('/users/:id', (req, res) => {
-  if (String(req.params.id) === String(req.user.id)) {
-    return res.status(400).json({ error: 'Cannot delete your own account' });
-  }
-  const user = db.prepare('SELECT id FROM users WHERE id = ?').get(req.params.id);
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  db.prepare('DELETE FROM users WHERE id = ?').run(req.params.id);
-  res.status(204).send();
+router.delete('/users/:id', async (req, res, next) => {
+  try {
+    if (String(req.params.id) === String(req.user.id)) {
+      return res.status(400).json({ error: 'Cannot delete your own account' });
+    }
+    const [user] = await sql`SELECT id FROM users WHERE id = ${req.params.id}`;
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    await sql`DELETE FROM users WHERE id = ${req.params.id}`;
+    res.status(204).send();
+  } catch (err) { next(err); }
 });
 
-router.get('/stats', (req, res) => {
-  const totalUsers = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
-  const activeSubscribers = db.prepare("SELECT COUNT(*) as count FROM users WHERE subscription_status IN ('active', 'trial')").get().count;
-  const totalSessions = db.prepare('SELECT COUNT(*) as count FROM sessions').get().count;
-  res.json({ totalUsers, activeSubscribers, totalSessions });
+router.get('/stats', async (req, res, next) => {
+  try {
+    const [{ count: totalUsers }] = await sql`SELECT COUNT(*)::int as count FROM users`;
+    const [{ count: activeSubscribers }] = await sql`
+      SELECT COUNT(*)::int as count FROM users WHERE subscription_status IN ('active', 'trial')
+    `;
+    const [{ count: totalSessions }] = await sql`SELECT COUNT(*)::int as count FROM sessions`;
+    res.json({ totalUsers, activeSubscribers, totalSessions });
+  } catch (err) { next(err); }
 });
 
 module.exports = router;
