@@ -10,9 +10,8 @@ import Dashboard from './pages/Dashboard.jsx';
 import SessionNew from './pages/SessionNew.jsx';
 import SessionDetail from './pages/SessionDetail.jsx';
 
-// Placeholder pages — will be replaced in later tasks
-const Progress = () => <div className="p-8 text-gray-400">Progress (coming soon)</div>;
-const Admin = () => <div className="p-8 text-gray-400">Admin (coming soon)</div>;
+import Progress from './pages/Progress.jsx';
+import Admin from './pages/Admin.jsx';
 
 export default function App() {
   return (
