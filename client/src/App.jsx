@@ -6,8 +6,9 @@ import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import Upgrade from './pages/Upgrade.jsx';
 
+import Dashboard from './pages/Dashboard.jsx';
+
 // Placeholder pages — will be replaced in later tasks
-const Dashboard = () => <div className="p-8 text-gray-400">Dashboard (coming soon)</div>;
 const SessionNew = () => <div className="p-8 text-gray-400">New Session (coming soon)</div>;
 const SessionDetail = () => <div className="p-8 text-gray-400">Session Detail (coming soon)</div>;
 const Progress = () => <div className="p-8 text-gray-400">Progress (coming soon)</div>;
