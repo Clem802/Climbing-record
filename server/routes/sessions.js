@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('../db/database');
+const { sql, withTransaction } = require('../db/database');
 const { requireAuth } = require('../middleware/auth');
 const { computePoints } = require('../utils/points');
 
@@ -8,12 +8,14 @@ router.use(requireAuth);
 
 const WRITE_ALLOWED_STATUSES = new Set(['active', 'trial']);
 
-function requireActiveSubscription(req, res, next) {
-  const user = db.prepare('SELECT subscription_status FROM users WHERE id = ?').get(req.user.id);
-  if (!user || !WRITE_ALLOWED_STATUSES.has(user.subscription_status)) {
-    return res.status(403).json({ error: 'Active subscription required' });
-  }
-  next();
+async function requireActiveSubscription(req, res, next) {
+  try {
+    const [user] = await sql`SELECT subscription_status FROM users WHERE id = ${req.user.id}`;
+    if (!user || !WRITE_ALLOWED_STATUSES.has(user.subscription_status)) {
+      return res.status(403).json({ error: 'Active subscription required' });
+    }
+    next();
+  } catch (err) { next(err); }
 }
 
 function buildSessionSummary(session, boulderRows) {
@@ -36,85 +38,117 @@ function validateBoulders(boulders) {
   return null;
 }
 
-router.get('/', (req, res) => {
-  const sessions = db.prepare('SELECT * FROM sessions WHERE user_id = ? ORDER BY date DESC, created_at DESC').all(req.user.id);
-  const result = sessions.map(s => {
-    const boulders = db.prepare('SELECT * FROM boulders WHERE session_id = ?').all(s.id);
-    return buildSessionSummary(s, boulders);
-  });
-  res.json(result);
+router.get('/', async (req, res, next) => {
+  try {
+    const sessions = await sql`
+      SELECT * FROM sessions WHERE user_id = ${req.user.id} ORDER BY date DESC, created_at DESC
+    `;
+    const result = await Promise.all(sessions.map(async s => {
+      const boulders = await sql`SELECT * FROM boulders WHERE session_id = ${s.id}`;
+      return buildSessionSummary(s, boulders);
+    }));
+    res.json(result);
+  } catch (err) { next(err); }
 });
 
-// MUST be before /:id to avoid 'full' being treated as an id
-router.get('/full', (req, res) => {
-  const sessions = db.prepare('SELECT * FROM sessions WHERE user_id = ? ORDER BY date ASC').all(req.user.id);
-  const result = sessions.map(s => {
-    const boulderRows = db.prepare('SELECT * FROM boulders WHERE session_id = ?').all(s.id);
+// MUST be before /:id
+router.get('/full', async (req, res, next) => {
+  try {
+    const sessions = await sql`
+      SELECT * FROM sessions WHERE user_id = ${req.user.id} ORDER BY date ASC
+    `;
+    const result = await Promise.all(sessions.map(async s => {
+      const boulderRows = await sql`SELECT * FROM boulders WHERE session_id = ${s.id}`;
+      const boulderList = boulderRows.map(b => ({ ...b, points: computePoints(b.attempts) }));
+      return { ...buildSessionSummary(s, boulderRows), boulders: boulderList };
+    }));
+    res.json(result);
+  } catch (err) { next(err); }
+});
+
+router.post('/', requireActiveSubscription, async (req, res, next) => {
+  try {
+    const { date, location, notes, boulders = [] } = req.body;
+    if (!date || !location) return res.status(400).json({ error: 'date and location required' });
+    const err = validateBoulders(boulders);
+    if (err) return res.status(400).json({ error: err });
+
+    // withTransaction uses Pool/client.query() with $1,$2 positional params
+    const session = await withTransaction(async (client) => {
+      const { rows: [newSession] } = await client.query(
+        'INSERT INTO sessions (user_id, date, location, notes) VALUES ($1, $2, $3, $4) RETURNING *',
+        [req.user.id, date, location.trim(), notes?.trim() || null]
+      );
+      for (const b of boulders) {
+        await client.query(
+          'INSERT INTO boulders (session_id, boulder_number, attempts) VALUES ($1, $2, $3)',
+          [newSession.id, b.boulder_number, b.attempts]
+        );
+      }
+      return newSession;
+    });
+
+    const boulderRows = await sql`SELECT * FROM boulders WHERE session_id = ${session.id}`;
     const boulderList = boulderRows.map(b => ({ ...b, points: computePoints(b.attempts) }));
-    return { ...buildSessionSummary(s, boulderRows), boulders: boulderList };
-  });
-  res.json(result);
+    res.status(201).json({ ...buildSessionSummary(session, boulderRows), boulders: boulderList });
+  } catch (err) { next(err); }
 });
 
-router.post('/', requireActiveSubscription, (req, res) => {
-  const { date, location, notes, boulders = [] } = req.body;
-  if (!date || !location) return res.status(400).json({ error: 'date and location required' });
-  const err = validateBoulders(boulders);
-  if (err) return res.status(400).json({ error: err });
-
-  const insertSession = db.transaction(() => {
-    const result = db.prepare(
-      'INSERT INTO sessions (user_id, date, location, notes) VALUES (?, ?, ?, ?)'
-    ).run(req.user.id, date, location.trim(), notes?.trim() || null);
-    const sessionId = result.lastInsertRowid;
-    const insertBoulder = db.prepare('INSERT INTO boulders (session_id, boulder_number, attempts) VALUES (?, ?, ?)');
-    for (const b of boulders) insertBoulder.run(sessionId, b.boulder_number, b.attempts);
-    return db.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
-  });
-
-  const session = insertSession();
-  const boulderRows = db.prepare('SELECT * FROM boulders WHERE session_id = ?').all(session.id);
-  const boulderList = boulderRows.map(b => ({ ...b, points: computePoints(b.attempts) }));
-  res.status(201).json({ ...buildSessionSummary(session, boulderRows), boulders: boulderList });
+router.get('/:id', async (req, res, next) => {
+  try {
+    const [session] = await sql`
+      SELECT * FROM sessions WHERE id = ${req.params.id} AND user_id = ${req.user.id}
+    `;
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const boulderRows = await sql`SELECT * FROM boulders WHERE session_id = ${session.id}`;
+    const boulderList = boulderRows.map(b => ({ ...b, points: computePoints(b.attempts) }));
+    res.json({ ...buildSessionSummary(session, boulderRows), boulders: boulderList });
+  } catch (err) { next(err); }
 });
 
-router.get('/:id', (req, res) => {
-  const session = db.prepare('SELECT * FROM sessions WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
-  if (!session) return res.status(404).json({ error: 'Session not found' });
-  const boulderRows = db.prepare('SELECT * FROM boulders WHERE session_id = ?').all(session.id);
-  const boulderList = boulderRows.map(b => ({ ...b, points: computePoints(b.attempts) }));
-  res.json({ ...buildSessionSummary(session, boulderRows), boulders: boulderList });
+router.put('/:id', requireActiveSubscription, async (req, res, next) => {
+  try {
+    const [session] = await sql`
+      SELECT * FROM sessions WHERE id = ${req.params.id} AND user_id = ${req.user.id}
+    `;
+    if (!session) return res.status(403).json({ error: 'Not found or forbidden' });
+
+    const { date, location, notes, boulders = [] } = req.body;
+    if (!date || !location) return res.status(400).json({ error: 'date and location required' });
+    const err = validateBoulders(boulders);
+    if (err) return res.status(400).json({ error: err });
+
+    // withTransaction uses Pool/client.query() with $1,$2 positional params
+    await withTransaction(async (client) => {
+      await client.query(
+        'UPDATE sessions SET date = $1, location = $2, notes = $3 WHERE id = $4',
+        [date, location.trim(), notes?.trim() || null, session.id]
+      );
+      await client.query('DELETE FROM boulders WHERE session_id = $1', [session.id]);
+      for (const b of boulders) {
+        await client.query(
+          'INSERT INTO boulders (session_id, boulder_number, attempts) VALUES ($1, $2, $3)',
+          [session.id, b.boulder_number, b.attempts]
+        );
+      }
+    });
+
+    const [updated] = await sql`SELECT * FROM sessions WHERE id = ${session.id}`;
+    const boulderRows = await sql`SELECT * FROM boulders WHERE session_id = ${session.id}`;
+    const boulderList = boulderRows.map(b => ({ ...b, points: computePoints(b.attempts) }));
+    res.json({ ...buildSessionSummary(updated, boulderRows), boulders: boulderList });
+  } catch (err) { next(err); }
 });
 
-router.put('/:id', requireActiveSubscription, (req, res) => {
-  const session = db.prepare('SELECT * FROM sessions WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
-  if (!session) return res.status(403).json({ error: 'Not found or forbidden' });
-
-  const { date, location, notes, boulders = [] } = req.body;
-  if (!date || !location) return res.status(400).json({ error: 'date and location required' });
-  const err = validateBoulders(boulders);
-  if (err) return res.status(400).json({ error: err });
-
-  const updateSession = db.transaction(() => {
-    db.prepare('UPDATE sessions SET date = ?, location = ?, notes = ? WHERE id = ?')
-      .run(date, location.trim(), notes?.trim() || null, session.id);
-    db.prepare('DELETE FROM boulders WHERE session_id = ?').run(session.id);
-    const insertBoulder = db.prepare('INSERT INTO boulders (session_id, boulder_number, attempts) VALUES (?, ?, ?)');
-    for (const b of boulders) insertBoulder.run(session.id, b.boulder_number, b.attempts);
-  });
-  updateSession();
-
-  const updated = db.prepare('SELECT * FROM sessions WHERE id = ?').get(session.id);
-  const boulderRows = db.prepare('SELECT * FROM boulders WHERE session_id = ?').all(session.id);
-  const boulderList = boulderRows.map(b => ({ ...b, points: computePoints(b.attempts) }));
-  res.json({ ...buildSessionSummary(updated, boulderRows), boulders: boulderList });
-});
-
-router.delete('/:id', requireActiveSubscription, (req, res) => {
-  const session = db.prepare('SELECT * FROM sessions WHERE id = ? AND user_id = ?').get(req.params.id, req.user.id);
-  if (!session) return res.status(403).json({ error: 'Not found or forbidden' });
-  db.prepare('DELETE FROM sessions WHERE id = ?').run(session.id);
-  res.status(204).send();
+router.delete('/:id', requireActiveSubscription, async (req, res, next) => {
+  try {
+    const [session] = await sql`
+      SELECT * FROM sessions WHERE id = ${req.params.id} AND user_id = ${req.user.id}
+    `;
+    if (!session) return res.status(403).json({ error: 'Not found or forbidden' });
+    await sql`DELETE FROM sessions WHERE id = ${session.id}`;
+    res.status(204).send();
+  } catch (err) { next(err); }
 });
 
 module.exports = router;
