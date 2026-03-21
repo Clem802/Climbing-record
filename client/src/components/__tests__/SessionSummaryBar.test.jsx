@@ -18,10 +18,9 @@ describe('SessionSummaryBar', () => {
 
   it('shows flash count', () => {
     render(<SessionSummaryBar boulders={boulders} />);
-    // "1" appears as flash count - also appears as boulder number label in BoulderCard
-    // Check it appears in the context of the summary bar
-    const flashElements = screen.getAllByText('1');
-    expect(flashElements.length).toBeGreaterThanOrEqual(1);
+    // Find the "Flashes" label, then check the parent container's text includes "1"
+    const flashesLabel = screen.getByText('Flashes');
+    expect(flashesLabel.parentElement.textContent).toBe('1Flashes');
   });
 
   it('shows 0 pts for empty boulders', () => {

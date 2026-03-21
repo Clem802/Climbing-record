@@ -36,7 +36,7 @@ export default function SessionDetail() {
         navigate('/dashboard');
       })
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, addToast, navigate]);
 
   async function handleSave(e) {
     e.preventDefault();

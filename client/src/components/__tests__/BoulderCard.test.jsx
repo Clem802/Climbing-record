@@ -27,4 +27,11 @@ describe('BoulderCard', () => {
     const dashBtn = screen.getByText('—');
     expect(dashBtn).toBeInTheDocument();
   });
+
+  it('does not call onChange when disabled', () => {
+    const onChange = vi.fn();
+    render(<BoulderCard number={1} value={null} onChange={onChange} disabled={true} />);
+    fireEvent.click(screen.getByText('1'));
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });
