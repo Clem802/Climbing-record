@@ -10,8 +10,8 @@ describe('BoulderCard', () => {
 
   it('calls onChange with attempt value when button clicked', () => {
     const onChange = vi.fn();
-    render(<BoulderCard number={1} value={null} onChange={onChange} />);
-    fireEvent.click(screen.getByText('1'));
+    render(<BoulderCard number={5} value={null} onChange={onChange} />);
+    fireEvent.click(screen.getByRole('button', { name: '1' }));
     expect(onChange).toHaveBeenCalledWith(1);
   });
 
@@ -30,8 +30,8 @@ describe('BoulderCard', () => {
 
   it('does not call onChange when disabled', () => {
     const onChange = vi.fn();
-    render(<BoulderCard number={1} value={null} onChange={onChange} disabled={true} />);
-    fireEvent.click(screen.getByText('1'));
+    render(<BoulderCard number={5} value={null} onChange={onChange} disabled={true} />);
+    fireEvent.click(screen.getByRole('button', { name: '1' }));
     expect(onChange).not.toHaveBeenCalled();
   });
 });

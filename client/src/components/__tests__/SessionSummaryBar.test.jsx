@@ -25,6 +25,7 @@ describe('SessionSummaryBar', () => {
 
   it('shows 0 pts for empty boulders', () => {
     render(<SessionSummaryBar boulders={{}} />);
-    expect(screen.getByText('0')).toBeInTheDocument();
+    const pointsLabel = screen.getByText('Points');
+    expect(pointsLabel.parentElement.textContent).toBe('0Points');
   });
 });
