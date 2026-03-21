@@ -38,20 +38,18 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Inactive banner */}
-      {!canLog && (
-        <div className="mb-6 bg-amber-900/40 border border-amber-700 rounded p-4">
-          <p className="text-amber-300 text-sm">Your subscription is inactive. Contact your admin to reactivate.</p>
-        </div>
-      )}
-
-      {/* New session button */}
-      {canLog && (
+      {/* Inactive upgrade prompt / New session button */}
+      {canLog ? (
         <button
           onClick={() => navigate('/sessions/new')}
           className="w-full mb-6 bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-lg transition text-lg">
           + Log New Session
         </button>
+      ) : (
+        <div className="mb-6 bg-amber-900/40 border border-amber-700 rounded p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+          <p className="text-amber-300 text-sm flex-1">Your subscription is inactive. Upgrade to log new sessions.</p>
+          <Link to="/upgrade" className="text-sm font-semibold px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded transition text-center">Upgrade</Link>
+        </div>
       )}
 
       {/* Sessions table */}
@@ -66,7 +64,7 @@ export default function Dashboard() {
               <tr className="text-left text-gray-400 border-b border-gray-700">
                 <th className="pb-2 pr-4">Date</th>
                 <th className="pb-2 pr-4">Location</th>
-                <th className="pb-2 pr-4 text-right">Score</th>
+                <th className="pb-2 pr-4 text-right">Points</th>
                 <th className="pb-2 pr-4 text-right">Completed</th>
                 <th className="pb-2 text-right">Flashes</th>
               </tr>

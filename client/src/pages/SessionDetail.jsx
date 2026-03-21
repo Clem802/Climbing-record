@@ -93,7 +93,8 @@ export default function SessionDetail() {
         <div className="grid grid-cols-5 gap-1.5 mb-6">
           {Array.from({ length: 35 }, (_, i) => i + 1).map(num => (
             <BoulderCard key={num} number={num} value={boulders[num]}
-              onChange={canEdit ? v => setBoulders(b => ({ ...b, [num]: v })) : () => {}} />
+              onChange={canEdit ? v => setBoulders(b => ({ ...b, [num]: v })) : () => {}}
+              disabled={!canEdit} />
           ))}
         </div>
 
