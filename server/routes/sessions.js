@@ -121,7 +121,7 @@ router.put('/:id', requireActiveSubscription, async (req, res, next) => {
     // withTransaction uses Pool/client.query() with $1,$2 positional params
     await withTransaction(async (client) => {
       await client.query(
-        'UPDATE sessions SET date = $1, location = $2, notes = $3 WHERE id = $4',
+        'UPDATE sessions SET date = $1, location = $2, notes = $3, updated_at = NOW() WHERE id = $4',
         [date, location.trim(), notes?.trim() || null, session.id]
       );
       await client.query('DELETE FROM boulders WHERE session_id = $1', [session.id]);

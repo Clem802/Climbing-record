@@ -26,6 +26,7 @@ async function migrate() {
       date TEXT NOT NULL,
       location TEXT NOT NULL,
       notes TEXT,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `;
@@ -38,6 +39,8 @@ async function migrate() {
       attempts INTEGER NOT NULL CHECK (attempts >= 1)
     )
   `;
+
+  await sql`ALTER TABLE sessions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()`;
 
   console.log('Migrations complete.');
 }
