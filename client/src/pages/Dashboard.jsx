@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { apiGetSessions } from '../api/sessions.js';
+import { useOfflineQueue } from '../hooks/useOfflineQueue.jsx';
 import { useAuth } from '../hooks/useAuth.jsx';
 import { useToast } from '../hooks/useToast.jsx';
 import SyncStatus from '../components/SyncStatus.jsx';
@@ -11,14 +11,15 @@ export default function Dashboard() {
   const { user, logout } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const { getSessions } = useOfflineQueue();
   const canLog = user?.subscription_status !== 'inactive';
 
   useEffect(() => {
-    apiGetSessions()
+    getSessions()
       .then(setSessions)
       .catch(() => addToast('Failed to load sessions', 'error'))
       .finally(() => setLoading(false));
-  }, []);
+  }, [getSessions]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -83,7 +84,12 @@ export default function Dashboard() {
                     onClick={() => navigate(`/sessions/${s.id}`)}
                     className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition">
                     <td className="px-4 py-3 font-medium">{s.date}</td>
-                    <td className="px-4 py-3 text-gray-600">{s.location}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {s.location}
+                      {s.unsynced && (
+                        <span className="ml-2 text-xs bg-amber-100 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full font-medium">unsynced</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-right font-bold text-brand">{s.total_points}</td>
                     <td className="px-4 py-3 text-right text-gray-700">{s.completed_count} / 35</td>
                     <td className="px-4 py-3 text-right text-gray-700">{s.flash_count}</td>
