@@ -1,5 +1,6 @@
 {
   "framework": null,
+  "installCommand": "npm install && npm install --prefix server",
   "buildCommand": "npm install --prefix client && npm run build --prefix client",
   "outputDirectory": "client/dist",
   "rewrites": [
