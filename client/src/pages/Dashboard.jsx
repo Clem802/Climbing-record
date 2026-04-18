@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { apiGetSessions } from '../api/sessions.js';
 import { useAuth } from '../hooks/useAuth.jsx';
 import { useToast } from '../hooks/useToast.jsx';
+import SyncStatus from '../components/SyncStatus.jsx';
 
 export default function Dashboard() {
   const [sessions, setSessions] = useState([]);
@@ -28,7 +29,8 @@ export default function Dashboard() {
             <span className="text-2xl font-bold text-brand tracking-tight">SPIDER</span>
             <span className="text-gray-400 text-sm ml-2">/ {user?.name}</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <SyncStatus />
             {user?.role === 'admin' && (
               <Link to="/admin" className="text-sm px-4 py-2 border border-gray-300 rounded-full hover:border-brand hover:text-brand transition font-medium">Admin</Link>
             )}
