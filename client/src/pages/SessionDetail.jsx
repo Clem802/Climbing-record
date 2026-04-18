@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BoulderCard from '../components/BoulderCard.jsx';
 import SessionSummaryBar from '../components/SessionSummaryBar.jsx';
-import { apiGetSession, apiUpdateSession } from '../api/sessions.js';
+import { useOfflineQueue } from '../hooks/useOfflineQueue.jsx';
 import { useAuth } from '../hooks/useAuth.jsx';
 import { useToast } from '../hooks/useToast.jsx';
 
@@ -18,6 +18,7 @@ export default function SessionDetail() {
   const { user } = useAuth();
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const { getSession, updateSession, deleteSession } = useOfflineQueue();
   const canEdit = user?.subscription_status !== 'inactive';
 
   const [form, setForm] = useState({ date: '', location: '', notes: '' });
@@ -26,7 +27,7 @@ export default function SessionDetail() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    apiGetSession(id)
+    getSession(id)
       .then(data => {
         setForm({ date: data.date, location: data.location, notes: data.notes || '' });
         setBoulders(initBoulders(data.boulders));
@@ -45,7 +46,7 @@ export default function SessionDetail() {
       const boulderPayload = Object.entries(boulders)
         .filter(([, v]) => v !== null)
         .map(([k, v]) => ({ boulder_number: Number(k), attempts: v }));
-      await apiUpdateSession(id, { ...form, boulders: boulderPayload });
+      await updateSession(id, { ...form, boulders: boulderPayload });
       addToast('Session saved!');
       navigate('/dashboard');
     } catch (err) {
@@ -99,10 +100,22 @@ export default function SessionDetail() {
         </div>
 
         {canEdit && (
-          <button type="submit" disabled={saving}
-            className="w-full bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-full transition disabled:opacity-50">
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
+          <div className="flex gap-3 mt-3">
+            <button type="submit" disabled={saving}
+              className="flex-1 bg-brand hover:bg-brand-dark text-white font-bold py-3 rounded-full transition disabled:opacity-50">
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                if (!confirm('Delete this session?')) return;
+                await deleteSession(id);
+                navigate('/dashboard');
+              }}
+              className="px-5 py-3 border border-red-300 text-red-600 hover:bg-red-50 font-bold rounded-full transition">
+              Delete
+            </button>
+          </div>
         )}
       </form>
 

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BoulderCard from '../components/BoulderCard.jsx';
 import SessionSummaryBar from '../components/SessionSummaryBar.jsx';
-import { apiCreateSession } from '../api/sessions.js';
+import { useOfflineQueue } from '../hooks/useOfflineQueue.jsx';
 import { useToast } from '../hooks/useToast.jsx';
 
 function initBoulders() {
@@ -18,6 +18,7 @@ export default function SessionNew() {
   const [summary, setSummary] = useState(null);
   const { addToast } = useToast();
   const navigate = useNavigate();
+  const { createSession } = useOfflineQueue();
 
   function setBoulder(num, value) {
     setBoulders(b => ({ ...b, [num]: value }));
@@ -31,7 +32,7 @@ export default function SessionNew() {
       const boulderPayload = Object.entries(boulders)
         .filter(([, v]) => v !== null)
         .map(([k, v]) => ({ boulder_number: Number(k), attempts: v }));
-      const data = await apiCreateSession({ ...form, boulders: boulderPayload });
+      const data = await createSession({ ...form, boulders: boulderPayload });
       setSummary(data);
     } catch (err) {
       addToast(err.error || 'Failed to save session', 'error');
